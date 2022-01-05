@@ -46,4 +46,19 @@ class NewsViewModelTest {
             Assert.assertEquals(newsViewModel.viewState.value, NewsUIState.Content(listOf()))
         }
     }
+
+    @Test
+    fun `given error repo state, when fetch news is called, then return correct UI state` () {
+        runBlocking {
+            val newsViewModel = NewsViewModel(newsRepository)
+            val error = Throwable()
+            whenever(newsRepository.getNewsRss("")).thenReturn(
+                flowOf(NewsRepoState.Error(error = error))
+            )
+
+            newsViewModel.getNewsAsync("")
+
+            Assert.assertEquals(newsViewModel.viewState.value, NewsUIState.Error(error = error))
+        }
+    }
 }

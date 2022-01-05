@@ -26,7 +26,7 @@ class NewsViewModel(
                         newsUIState.value = NewsUIState.Content(newsList = newsMapper(newsRepoState.news))
                     }
                     is NewsRepoState.Error -> {
-
+                        newsUIState.value = NewsUIState.Error(error = newsRepoState.error ?: Throwable("Error"))
                     }
                 }
             }

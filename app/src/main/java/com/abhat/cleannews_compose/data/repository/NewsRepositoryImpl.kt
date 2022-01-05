@@ -13,7 +13,7 @@ class NewsRepositoryImpl(private val newsApi: NewsApi): NewsRepository {
                 response.channel?.items?.let {
                     emit(NewsRepoState.Success(news = it))
                 } ?: run {
-                    emit(NewsRepoState.Error(Throwable("News items are null or empty")))
+                    emit(NewsRepoState.Error(Throwable("News items are null")))
                 }
             } catch (e: Exception) {
                 emit(NewsRepoState.Error(Throwable(e.localizedMessage)))

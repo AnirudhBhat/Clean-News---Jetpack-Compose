@@ -7,6 +7,7 @@ import com.abhat.cleannews_compose.data.models.Item
 import com.abhat.cleannews_compose.data.models.Rss
 import com.abhat.cleannews_compose.data.repository.NewsRepositoryImpl
 import com.abhat.cleannews_compose.data.repository.state.NewsRepoState
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CompletableDeferred
@@ -47,6 +48,22 @@ class NewsRepositoryTest {
             val actualState = newsRepository.getNewsRss("").toList()
 
             Assert.assertEquals(expectedState, actualState[0])
+        }
+    }
+
+    @Test
+    fun `given success response but null news items from api, when news repo called, then Error repo state is returned` () {
+        runBlocking {
+            whenever(newsApi.getNewsRssAsync("")).thenReturn(
+                CompletableDeferred(
+                    Rss()
+                )
+            )
+            val newsRepository = NewsRepositoryImpl(newsApi)
+
+            val actualState = newsRepository.getNewsRss("").toList()
+
+            Assert.assertTrue(actualState[0] is NewsRepoState.Error)
         }
     }
 }

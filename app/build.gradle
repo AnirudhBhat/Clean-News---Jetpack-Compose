@@ -62,4 +62,14 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+
+    // Networking
+    implementation "com.squareup.retrofit2:retrofit:${retrofit}"
+    implementation "com.squareup.retrofit2:converter-gson:${retrofitGsonConverter}"
+    implementation "com.squareup.retrofit2:converter-simplexml:${retrofitXmlConverter}"
+    implementation "com.squareup.okhttp3:logging-interceptor:${retrofitLogging}"
+    implementation "com.squareup.okhttp3:okhttp:${okHttp}"
+    implementation "com.squareup.okhttp3:logging-interceptor:${okHttp}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${coroutineAndroid}"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapter}"
 }

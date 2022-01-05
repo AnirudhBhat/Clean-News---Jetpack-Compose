@@ -66,4 +66,16 @@ class NewsRepositoryTest {
             Assert.assertTrue(actualState[0] is NewsRepoState.Error)
         }
     }
+
+    @Test
+    fun `given api throws exception, when news repo called, then Error repo state is returned` () {
+        runBlocking {
+            whenever(newsApi.getNewsRssAsync("")).thenThrow(RuntimeException())
+            val newsRepository = NewsRepositoryImpl(newsApi)
+
+            val actualState = newsRepository.getNewsRss("").toList()
+
+            Assert.assertTrue(actualState[0] is NewsRepoState.Error)
+        }
+    }
 }

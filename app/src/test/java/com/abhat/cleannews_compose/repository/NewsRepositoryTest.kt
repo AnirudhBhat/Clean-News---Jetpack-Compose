@@ -3,11 +3,9 @@ package com.abhat.cleannews_compose.repository
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.abhat.cleannews_compose.data.api.NewsApi
 import com.abhat.cleannews_compose.data.models.Channel
-import com.abhat.cleannews_compose.data.models.Item
 import com.abhat.cleannews_compose.data.models.Rss
 import com.abhat.cleannews_compose.data.repository.NewsRepositoryImpl
 import com.abhat.cleannews_compose.data.repository.state.NewsRepoState
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CompletableDeferred

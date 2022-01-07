@@ -18,6 +18,9 @@ class NewsViewModel(
     private val newsUIState: MutableLiveData<NewsUIState> = MutableLiveData()
     val viewState: LiveData<NewsUIState> = newsUIState
 
+    private val _event: MutableLiveData<Event> = MutableLiveData()
+    val event: LiveData<Event> = _event
+
     fun getNewsAsync(url: String) {
         viewModelScope.launch {
             newsUIState.value = NewsUIState.Loading
@@ -32,6 +35,10 @@ class NewsViewModel(
                 }
             }
         }
+    }
+
+    fun validateAndTriggerOpenLinkCommand(url: String) {
+
     }
 
     private fun newsMapper(itemList: List<Item>): List<News> {
@@ -51,4 +58,8 @@ class NewsViewModel(
         val link: String?,
         val pubDate: String
     )
+
+    sealed class Event {
+        data class OpenLink(val url: String) : Event()
+    }
 }

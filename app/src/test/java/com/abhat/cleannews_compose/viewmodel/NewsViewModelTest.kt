@@ -29,12 +29,14 @@ class NewsViewModelTest {
 
     private lateinit var newsRepository: NewsRepository
     private lateinit var newsUIStateObserver: Observer<NewsUIState>
+    private lateinit var newsEventObserver: Observer<NewsViewModel.Event>
 
 
     @Before
     fun setup() {
         newsRepository = mock()
         newsUIStateObserver = mock()
+        newsEventObserver = mock()
     }
 
     @Test
@@ -79,5 +81,16 @@ class NewsViewModelTest {
 
             verify(newsUIStateObserver).onChanged(NewsUIState.Loading)
         }
+    }
+
+    @Test
+    fun `given valind link, when open link called, then trigger open link event` () {
+        val validLink = "https://www.google.com"
+        val newsViewModel = NewsViewModel(newsRepository)
+        newsViewModel.event.observeForever(newsEventObserver)
+
+        newsViewModel.validateAndTriggerOpenLinkCommand(validLink)
+
+        verify(newsEventObserver).onChanged(NewsViewModel.Event.OpenLink(validLink))
     }
 }

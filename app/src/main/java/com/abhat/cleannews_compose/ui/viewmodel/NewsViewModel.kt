@@ -20,6 +20,7 @@ class NewsViewModel(
 
     fun getNewsAsync(url: String) {
         viewModelScope.launch {
+            newsUIState.value = NewsUIState.Loading
             newsRepository.getNewsRss(url).collect { newsRepoState ->
                 when (newsRepoState) {
                     is NewsRepoState.Success -> {

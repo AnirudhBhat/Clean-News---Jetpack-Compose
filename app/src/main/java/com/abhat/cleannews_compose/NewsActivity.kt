@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,12 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.Observer
 import com.abhat.cleannews_compose.di.NetworkGraphImpl
 import com.abhat.cleannews_compose.di.NewsGraph
 import com.abhat.cleannews_compose.ui.theme.CleanNewsComposeTheme
@@ -61,9 +59,10 @@ class NewsActivity : ComponentActivity() {
         setContent {
             CleanNewsComposeTheme {
                 // A surface container using the 'background' color from the theme
-                val onNewsClick = {
-                        url: String -> openLinkInBrowser(this, url)
+                val onNewsClick = { url: String ->
+                    newsViewModel.validateAndTriggerOpenLinkCommand(url)
                 }
+                observeEvent()
                 Surface(color = MaterialTheme.colors.background) {
                     BottomAppBarComposable(newsViewModel, onNewsClick)
                     if (savedInstanceState == null) {
@@ -73,13 +72,19 @@ class NewsActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun observeEvent() {
+        newsViewModel.event.observe(this, Observer { event ->
+            when (event) {
+                is NewsViewModel.Event.OpenLink -> openLinkInBrowser(this, event.url)
+            }
+        })
+    }
 }
 
 private fun openLinkInBrowser(context: Context, url: String) {
-    if (!url.isNullOrEmpty()) {
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(context, browserIntent, null)
-    }
+    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    startActivity(context, browserIntent, null)
 }
 
 @ExperimentalMaterialApi
@@ -114,12 +119,14 @@ private fun BottomAppBarComposable(
                     }
                     Column {
                         if (!news.newsList.isNullOrEmpty()) {
-                            LazyColumn(modifier = Modifier.padding(
-                                start = 0.dp,
-                                top = 0.dp,
-                                end = 0.dp,
-                                bottom = 56.dp
-                            )) {
+                            LazyColumn(
+                                modifier = Modifier.padding(
+                                    start = 0.dp,
+                                    top = 0.dp,
+                                    end = 0.dp,
+                                    bottom = 56.dp
+                                )
+                            ) {
                                 items(news.newsList?.size ?: 0) {
                                     Card(
                                         elevation = 16.dp,
@@ -128,11 +135,12 @@ private fun BottomAppBarComposable(
                                         }
                                     ) {
                                         Column {
-                                            val format = if (news.newsList!![it].link?.isEmpty()!!) {
-                                                "dd-mm-yyyy | HH:mm a"
-                                            } else {
-                                                "EEE, d MMM yyyy HH:mm:ss"
-                                            }
+                                            val format =
+                                                if (news.newsList!![it].link?.isEmpty()!!) {
+                                                    "dd-mm-yyyy | HH:mm a"
+                                                } else {
+                                                    "EEE, d MMM yyyy HH:mm:ss"
+                                                }
                                             Text(
                                                 text = news.newsList!![it].title,
                                                 style = MaterialTheme.typography.body1,
@@ -143,7 +151,12 @@ private fun BottomAppBarComposable(
                                                     .padding(vertical = 8.dp)
                                             )
                                             Text(
-                                                text = formatDate(news.newsList!![it].pubDate.replace("pubDate", ""), format),
+                                                text = formatDate(
+                                                    news.newsList!![it].pubDate.replace(
+                                                        "pubDate",
+                                                        ""
+                                                    ), format
+                                                ),
                                                 style = MaterialTheme.typography.subtitle1,
                                                 textAlign = TextAlign.Left,
                                                 modifier = Modifier
@@ -168,7 +181,7 @@ private fun BottomAppBarComposable(
                                 icon = {
                                     //Icon(Icons.Filled.Favorite , "")
                                 },
-                                label = { Text(text = "DD")},
+                                label = { Text(text = "DD") },
                                 selected = selectedItem.value == "DD",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://ddnews.gov.in/rss-feeds")
@@ -181,7 +194,7 @@ private fun BottomAppBarComposable(
                                 icon = {
 //                                    Icon(Icons.Filled.Search , "")
                                 },
-                                label = { Text(text = "AIR")},
+                                label = { Text(text = "AIR") },
                                 selected = selectedItem.value == "AIR",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://www.newsonair.gov.in/top_rss.aspx")
@@ -197,7 +210,7 @@ private fun BottomAppBarComposable(
                                 },
 
 
-                                label = { Text(text = "TOI")},
+                                label = { Text(text = "TOI") },
                                 selected = selectedItem.value == "TOI",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://timesofindia.indiatimes.com/rssfeedstopstories.cms")
@@ -211,7 +224,7 @@ private fun BottomAppBarComposable(
                                 icon = {
 //                                    Icon(Icons.Filled.LocationOn , "")
                                 },
-                                label = { Text(text = "Economic Times")},
+                                label = { Text(text = "Economic Times") },
                                 selected = selectedItem.value == "EconomicTimes",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://economictimes.indiatimes.com/rssfeedstopstories.cms")

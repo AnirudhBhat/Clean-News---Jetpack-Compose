@@ -66,7 +66,9 @@ class NewsActivity : ComponentActivity() {
                 }
                 Surface(color = MaterialTheme.colors.background) {
                     BottomAppBarComposable(newsViewModel, onNewsClick)
-                    newsViewModel.getNewsAsync("https://ddnews.gov.in/rss-feeds")
+                    if (savedInstanceState == null) {
+                        newsViewModel.getNewsAsync("https://ddnews.gov.in/rss-feeds")
+                    }
                 }
             }
         }

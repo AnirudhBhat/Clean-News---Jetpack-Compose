@@ -37,8 +37,10 @@ class NewsViewModel(
         }
     }
 
-    fun validateAndTriggerOpenLinkCommand(url: String) {
-
+    fun validateAndTriggerOpenLinkCommand(url: String?) {
+        if (!url.isNullOrEmpty()) {
+            _event.value = Event.OpenLink(url)
+        }
     }
 
     private fun newsMapper(itemList: List<Item>): List<News> {

@@ -8,6 +8,7 @@ import com.abhat.cleannews_compose.ui.viewmodel.NewsViewModel
 import com.abhat.cleannews_compose.ui.viewmodel.state.NewsUIState
 import com.abhat.cleannews_compose.util.CoroutineTestRule
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,7 +85,7 @@ class NewsViewModelTest {
     }
 
     @Test
-    fun `given valind link, when open link called, then trigger open link event` () {
+    fun `given valid link, when open link called, then trigger open link event` () {
         val validLink = "https://www.google.com"
         val newsViewModel = NewsViewModel(newsRepository)
         newsViewModel.event.observeForever(newsEventObserver)
@@ -92,5 +93,27 @@ class NewsViewModelTest {
         newsViewModel.validateAndTriggerOpenLinkCommand(validLink)
 
         verify(newsEventObserver).onChanged(NewsViewModel.Event.OpenLink(validLink))
+    }
+
+    @Test
+    fun `given empty link, when open link called, then do not trigger open link event` () {
+        val invalidLink = ""
+        val newsViewModel = NewsViewModel(newsRepository)
+        newsViewModel.event.observeForever(newsEventObserver)
+
+        newsViewModel.validateAndTriggerOpenLinkCommand(invalidLink)
+
+        verify(newsEventObserver, never()).onChanged(NewsViewModel.Event.OpenLink(invalidLink))
+    }
+
+    @Test
+    fun `given null link, when open link called, then do not trigger open link event` () {
+        val invalidLink = null
+        val newsViewModel = NewsViewModel(newsRepository)
+        newsViewModel.event.observeForever(newsEventObserver)
+
+        newsViewModel.validateAndTriggerOpenLinkCommand(invalidLink)
+
+        verify(newsEventObserver, never()).onChanged(NewsViewModel.Event.OpenLink(""))
     }
 }

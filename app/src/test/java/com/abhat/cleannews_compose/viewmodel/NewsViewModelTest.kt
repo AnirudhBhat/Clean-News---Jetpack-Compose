@@ -2,6 +2,7 @@ package com.abhat.cleannews_compose.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import com.abhat.cleannews_compose.data.models.Item
 import com.abhat.cleannews_compose.data.repository.NewsRepository
 import com.abhat.cleannews_compose.data.repository.state.NewsRepoState
 import com.abhat.cleannews_compose.ui.viewmodel.NewsViewModel
@@ -115,5 +116,97 @@ class NewsViewModelTest {
         newsViewModel.validateAndTriggerOpenLinkCommand(invalidLink)
 
         verify(newsEventObserver, never()).onChanged(NewsViewModel.Event.OpenLink(""))
+    }
+
+    @Test
+    fun `given dd news, when news source is mapped, then source is dd` () {
+        runBlocking {
+            val newsViewModel = NewsViewModel(newsRepository)
+            whenever(newsRepository.getNewsRss("")).thenReturn(
+                flowOf(NewsRepoState.Success(news = listOf(
+                    Item(
+                        title = "",
+                        link = "https://ddnews.gov.in/rss-feeds",
+                        description = "",
+                        pubDate = ""
+                    )
+                )))
+            )
+            newsViewModel.viewState.observeForever(newsUIStateObserver)
+            val expectedSource = "dd"
+
+            newsViewModel.getNewsAsync("")
+
+            Assert.assertEquals(expectedSource, (newsViewModel.viewState.value as NewsUIState.Content).newsList[0].source)
+        }
+    }
+
+    @Test
+    fun `given newsonair news, when news source is mapped, then source is newsonair` () {
+        runBlocking {
+            val newsViewModel = NewsViewModel(newsRepository)
+            whenever(newsRepository.getNewsRss("")).thenReturn(
+                flowOf(NewsRepoState.Success(news = listOf(
+                    Item(
+                        title = "",
+                        link = "https://www.newsonair.gov.in/top_rss.aspx",
+                        description = "",
+                        pubDate = ""
+                    )
+                )))
+            )
+            newsViewModel.viewState.observeForever(newsUIStateObserver)
+            val expectedSource = "newsonair"
+
+            newsViewModel.getNewsAsync("")
+
+            Assert.assertEquals(expectedSource, (newsViewModel.viewState.value as NewsUIState.Content).newsList[0].source)
+        }
+    }
+
+    @Test
+    fun `given timesofindia news, when news source is mapped, then source is timesofindia` () {
+        runBlocking {
+            val newsViewModel = NewsViewModel(newsRepository)
+            whenever(newsRepository.getNewsRss("")).thenReturn(
+                flowOf(NewsRepoState.Success(news = listOf(
+                    Item(
+                        title = "",
+                        link = "https://timesofindia.indiatimes.com/rssfeedstopstories.cms",
+                        description = "",
+                        pubDate = ""
+                    )
+                )))
+            )
+            newsViewModel.viewState.observeForever(newsUIStateObserver)
+            val expectedSource = "timesofindia"
+
+            newsViewModel.getNewsAsync("")
+
+            Assert.assertEquals(expectedSource, (newsViewModel.viewState.value as NewsUIState.Content).newsList[0].source)
+        }
+    }
+
+    @Test
+    fun `given economictimes news, when news source is mapped, then source is economictimes` () {
+        runBlocking {
+            val newsViewModel = NewsViewModel(newsRepository)
+            whenever(newsRepository.getNewsRss("")).thenReturn(
+                flowOf(NewsRepoState.Success(news = listOf(
+                    Item(
+                        title = "",
+                        link = "https://economictimes.indiatimes.com/rssfeedstopstories.cms",
+                        description = "",
+                        pubDate = ""
+                    )
+                )))
+            )
+            newsViewModel.viewState.observeForever(newsUIStateObserver)
+            val expectedSource = "economictimes"
+
+            newsViewModel.getNewsAsync("")
+
+            Assert.assertEquals(expectedSource, (newsViewModel.viewState.value as NewsUIState.Content).newsList[0].source)
+        }
     }
 }

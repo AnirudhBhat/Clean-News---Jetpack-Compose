@@ -49,8 +49,29 @@ class NewsViewModel(
                 title = it.title,
                 description = it.description,
                 link = it.link,
-                pubDate = it.pubDate
+                pubDate = it.pubDate,
+                source = mapNewsSource(it.link)
             )
+        }
+    }
+
+    private fun mapNewsSource(url: String): String {
+        return when {
+            url.contains("dd", ignoreCase = true) -> {
+                "dd"
+            }
+            url.contains("newsonair", ignoreCase = true) -> {
+                "newsonair"
+            }
+            url.contains("timesofindia", ignoreCase = true) -> {
+                "timesofindia"
+            }
+            url.isNullOrEmpty() -> {
+                "dd"
+            }
+            else -> {
+                "economictimes"
+            }
         }
     }
 
@@ -58,7 +79,8 @@ class NewsViewModel(
         val title: String,
         val description: String?,
         val link: String?,
-        val pubDate: String
+        val pubDate: String,
+        val source: String
     )
 
     sealed class Event {

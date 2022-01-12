@@ -93,8 +93,9 @@ private fun BottomAppBarComposable(
     newsViewModel: NewsViewModel,
     onNewsClick: (String) -> Unit
 ) {
-    val selectedItem = remember { mutableStateOf("upload") }
     val news: NewsUIState by newsViewModel.viewState.observeAsState(NewsUIState.Loading)
+    val selectedItem = remember { mutableStateOf(news.newsList?.get(0)?.source ?: "") }
+    selectedItem.value = news.newsList?.get(0)?.source ?: ""
 
     Column {
         Scaffold(
@@ -182,10 +183,10 @@ private fun BottomAppBarComposable(
                                     //Icon(Icons.Filled.Favorite , "")
                                 },
                                 label = { Text(text = "DD") },
-                                selected = selectedItem.value == "DD",
+                                selected = selectedItem.value == "dd",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://ddnews.gov.in/rss-feeds")
-                                    selectedItem.value = "DD"
+                                    selectedItem.value = "dd"
                                 },
                                 alwaysShowLabel = true
                             )
@@ -195,11 +196,11 @@ private fun BottomAppBarComposable(
 //                                    Icon(Icons.Filled.Search , "")
                                 },
                                 label = { Text(text = "AIR") },
-                                selected = selectedItem.value == "AIR",
+                                selected = selectedItem.value == "newsonair",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://www.newsonair.gov.in/top_rss.aspx")
 //                                result.value = "Save icon clicked"
-                                    selectedItem.value = "AIR"
+                                    selectedItem.value = "newsonair"
                                 },
                                 alwaysShowLabel = true
                             )
@@ -211,11 +212,11 @@ private fun BottomAppBarComposable(
 
 
                                 label = { Text(text = "TOI") },
-                                selected = selectedItem.value == "TOI",
+                                selected = selectedItem.value == "timesofindia",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://timesofindia.indiatimes.com/rssfeedstopstories.cms")
 //                                result.value = "Upload icon clicked"
-                                    selectedItem.value = "TOI"
+                                    selectedItem.value = "timesofindia"
                                 },
                                 alwaysShowLabel = true
                             )
@@ -225,11 +226,11 @@ private fun BottomAppBarComposable(
 //                                    Icon(Icons.Filled.LocationOn , "")
                                 },
                                 label = { Text(text = "Economic Times") },
-                                selected = selectedItem.value == "EconomicTimes",
+                                selected = selectedItem.value == "economictimes",
                                 onClick = {
                                     newsViewModel.getNewsAsync("https://economictimes.indiatimes.com/rssfeedstopstories.cms")
 //                                result.value = "Download icon clicked"
-                                    selectedItem.value = "EconomicTimes"
+                                    selectedItem.value = "economictimes"
                                 },
                                 alwaysShowLabel = true
                             )

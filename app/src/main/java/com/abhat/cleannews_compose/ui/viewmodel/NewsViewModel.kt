@@ -2,35 +2,67 @@ package com.abhat.cleannews_compose.ui.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhat.cleannews_compose.data.models.Item
 import com.abhat.cleannews_compose.data.repository.NewsRepository
 import com.abhat.cleannews_compose.data.repository.state.NewsRepoState
+import com.abhat.cleannews_compose.di.CoroutineContextProvider
 import com.abhat.cleannews_compose.ui.viewmodel.state.NewsUIState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NewsViewModel(
-    private val newsRepository: NewsRepository
-): ViewModel() {
+    private val savedStateHandle: SavedStateHandle,
+    private val newsRepository: NewsRepository,
+    private val coroutineContextProvider: CoroutineContextProvider
+) : ViewModel() {
 
     private val newsUIState: MutableLiveData<NewsUIState> = MutableLiveData()
     val viewState: LiveData<NewsUIState> = newsUIState
 
-    private val _event: MutableLiveData<Event> = MutableLiveData()
-    val event: LiveData<Event> = _event
+    private val _event: SingleLiveEvent<Event> = SingleLiveEvent()
+    val event: SingleLiveEvent<Event> = _event
+
+    init {
+        getNewsAsync(savedStateHandle?.get<String>("url") ?: "https://ddnews.gov.in/rss-feeds")
+    }
 
     fun getNewsAsync(url: String) {
-        viewModelScope.launch {
-            newsUIState.value = NewsUIState.Loading
-            newsRepository.getNewsRss(url).collect { newsRepoState ->
+        savedStateHandle["url"] = url
+        viewModelScope.launch(coroutineContextProvider.IO) {
+            withContext(coroutineContextProvider.Main) {
+                newsUIState.value = (NewsUIState.Loading)
+            }
+            newsRepository.getNewsRss(savedStateHandle["url"]!!).collect { newsRepoState ->
                 when (newsRepoState) {
                     is NewsRepoState.Success -> {
-                        newsUIState.value = NewsUIState.Content(newsList = newsMapper(newsRepoState.news))
+                        withContext(coroutineContextProvider.Main) {
+                            newsUIState.value = (
+                                    NewsUIState.Content(
+                                        newsList = newsMapper(
+                                            newsRepoState.news
+                                        )
+                                    )
+                                    )
+                        }
                     }
                     is NewsRepoState.Error -> {
-                        newsUIState.value = NewsUIState.Error(error = newsRepoState.error ?: Throwable("Error"))
+                        withContext(coroutineContextProvider.Main) {
+                            newsUIState.value = (
+                                    NewsUIState.Error(
+                                        newsList = if (newsRepoState.news == null) {
+                                            null
+                                        } else {
+                                            newsMapper(newsRepoState.news)
+                                        },
+                                        error = newsRepoState.error ?: Throwable("Error")
+                                    )
+                                    )
+                        }
                     }
                 }
             }
@@ -75,6 +107,10 @@ class NewsViewModel(
         }
     }
 
+    fun shareNews(url: String) {
+        _event.value = Event.ShareNews(url)
+    }
+
     data class News(
         val title: String,
         val description: String?,
@@ -85,5 +121,6 @@ class NewsViewModel(
 
     sealed class Event {
         data class OpenLink(val url: String) : Event()
+        data class ShareNews(val newsUrl: String) : Event()
     }
 }

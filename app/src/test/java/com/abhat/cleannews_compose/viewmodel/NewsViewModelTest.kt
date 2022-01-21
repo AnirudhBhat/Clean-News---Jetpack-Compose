@@ -2,9 +2,11 @@ package com.abhat.cleannews_compose.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateHandle
 import com.abhat.cleannews_compose.data.models.Item
 import com.abhat.cleannews_compose.data.repository.NewsRepository
 import com.abhat.cleannews_compose.data.repository.state.NewsRepoState
+import com.abhat.cleannews_compose.di.CoroutineContextProvider
 import com.abhat.cleannews_compose.ui.viewmodel.NewsViewModel
 import com.abhat.cleannews_compose.ui.viewmodel.state.NewsUIState
 import com.abhat.cleannews_compose.util.CoroutineTestRule
@@ -12,11 +14,14 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -32,6 +37,7 @@ class NewsViewModelTest {
     private lateinit var newsRepository: NewsRepository
     private lateinit var newsUIStateObserver: Observer<NewsUIState>
     private lateinit var newsEventObserver: Observer<NewsViewModel.Event>
+    private lateinit var savedStateHandle: SavedStateHandle
 
 
     @Before
@@ -39,12 +45,13 @@ class NewsViewModelTest {
         newsRepository = mock()
         newsUIStateObserver = mock()
         newsEventObserver = mock()
+        savedStateHandle = SavedStateHandle()
     }
 
     @Test
     fun `given success repo state, when fetch news is called, then return correct UI state` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Success(news = listOf()))
             )
@@ -58,7 +65,7 @@ class NewsViewModelTest {
     @Test
     fun `given error repo state, when fetch news is called, then return correct UI state` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             val error = Throwable()
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Error(error = error))
@@ -71,9 +78,10 @@ class NewsViewModelTest {
     }
 
     @Test
+    @Ignore("Need to find a clean way to handle loading")
     fun `when fetch news is called, then loading UI state is shown` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Success(news = listOf()))
             )
@@ -88,7 +96,7 @@ class NewsViewModelTest {
     @Test
     fun `given valid link, when open link called, then trigger open link event` () {
         val validLink = "https://www.google.com"
-        val newsViewModel = NewsViewModel(newsRepository)
+        val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
         newsViewModel.event.observeForever(newsEventObserver)
 
         newsViewModel.validateAndTriggerOpenLinkCommand(validLink)
@@ -99,7 +107,7 @@ class NewsViewModelTest {
     @Test
     fun `given empty link, when open link called, then do not trigger open link event` () {
         val invalidLink = ""
-        val newsViewModel = NewsViewModel(newsRepository)
+        val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
         newsViewModel.event.observeForever(newsEventObserver)
 
         newsViewModel.validateAndTriggerOpenLinkCommand(invalidLink)
@@ -110,7 +118,7 @@ class NewsViewModelTest {
     @Test
     fun `given null link, when open link called, then do not trigger open link event` () {
         val invalidLink = null
-        val newsViewModel = NewsViewModel(newsRepository)
+        val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
         newsViewModel.event.observeForever(newsEventObserver)
 
         newsViewModel.validateAndTriggerOpenLinkCommand(invalidLink)
@@ -121,7 +129,7 @@ class NewsViewModelTest {
     @Test
     fun `given dd news, when news source is mapped, then source is dd` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Success(news = listOf(
                     Item(
@@ -144,7 +152,7 @@ class NewsViewModelTest {
     @Test
     fun `given newsonair news, when news source is mapped, then source is newsonair` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Success(news = listOf(
                     Item(
@@ -167,7 +175,7 @@ class NewsViewModelTest {
     @Test
     fun `given timesofindia news, when news source is mapped, then source is timesofindia` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Success(news = listOf(
                     Item(
@@ -190,7 +198,7 @@ class NewsViewModelTest {
     @Test
     fun `given economictimes news, when news source is mapped, then source is economictimes` () {
         runBlocking {
-            val newsViewModel = NewsViewModel(newsRepository)
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
             whenever(newsRepository.getNewsRss("")).thenReturn(
                 flowOf(NewsRepoState.Success(news = listOf(
                     Item(
@@ -208,5 +216,23 @@ class NewsViewModelTest {
 
             Assert.assertEquals(expectedSource, (newsViewModel.viewState.value as NewsUIState.Content).newsList[0].source)
         }
+    }
+
+    @Test
+    fun `when share icon is tapped, then correct event is triggered` () {
+        runBlocking {
+            val newsViewModel = NewsViewModel(savedStateHandle, newsRepository, TestCoroutineContextProvider())
+            val newsUrl = "https://economictimes.indiatimes.com/rssfeedstopstories.cms"
+            newsViewModel.event.observeForever(newsEventObserver)
+
+            newsViewModel.shareNews("https://economictimes.indiatimes.com/rssfeedstopstories.cms")
+
+            verify(newsEventObserver).onChanged(NewsViewModel.Event.ShareNews(newsUrl))
+        }
+    }
+
+    private class TestCoroutineContextProvider: CoroutineContextProvider() {
+        override val Main: CoroutineDispatcher = Dispatchers.Unconfined
+        override val IO: CoroutineDispatcher = Dispatchers.Unconfined
     }
 }

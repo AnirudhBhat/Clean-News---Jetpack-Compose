@@ -15,5 +15,8 @@ sealed class NewsUIState(
 
     data class Content(override val newsList: List<News>) : NewsUIState()
 
-    data class Error(override val error: Throwable) : NewsUIState()
+    data class Error(
+        override val newsList: List<News>? = null,
+        override val error: Throwable
+    ) : NewsUIState()
 }

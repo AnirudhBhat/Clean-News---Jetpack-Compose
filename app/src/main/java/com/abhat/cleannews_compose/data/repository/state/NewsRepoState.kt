@@ -7,5 +7,8 @@ import com.abhat.cleannews_compose.data.models.Item
  */
 sealed class NewsRepoState {
     data class Success(val news: List<Item>): NewsRepoState()
-    data class Error(val error: Throwable?): NewsRepoState()
+    data class Error(
+        val news: List<Item>? = null,
+        val error: Throwable?
+        ): NewsRepoState()
 }

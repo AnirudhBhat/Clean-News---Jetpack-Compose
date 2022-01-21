@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -78,4 +79,9 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:${okHttp}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${coroutineAndroid}"
     implementation "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapter}"
+
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-savedstate:1.0.0-alpha01'
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.17.0"
+    implementation "androidx.room:room-runtime:2.2.5"
+    kapt "androidx.room:room-compiler:2.2.5"
 }
